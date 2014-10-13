@@ -146,7 +146,7 @@ def t0_bounds(data, model):
             model.get('t0') + np.max(data['time']) - model.mintime())
 
 
-def guess_t0_and_amplitude(data, model, minsnr):
+def guess_t0_and_amplitude(data, model, minsnr, zbounds=[0.0, 1.5]):
     """Guess t0 and amplitude of the model based on the data.
 
     Assumes the data has been standardized."""
@@ -161,6 +161,11 @@ def guess_t0_and_amplitude(data, model, minsnr):
     datatime = {}
     zp = data['zp'][0]  # Same for all entries in "standardized" data.
     zpsys = data['zpsys'][0]  # Same for all entries in "standardized" data.
+
+    #In order to calculate modelflux, we use a guess redshift
+    # set guess redshift as zbounds.mean()
+    zguess = np.asarray(zbounds).mean()
+    model.set(z=zguess)
     for band in set(data['band']):
         mask = significant_data['band'] == band
         if np.any(mask):
@@ -344,7 +349,8 @@ def fit_lc(data, model, param_names, bounds=None, method='minuit',
     # Make guesses for t0 and amplitude.
     # (For now, we assume it is the 3rd parameter of the model.)
     if (guess_amplitude or guess_t0):
-        t0, amplitude = guess_t0_and_amplitude(data, model, minsnr)
+        t0, amplitude = guess_t0_and_amplitude(data, model, minsnr, 
+                        zbounds=bounds['z'])
         if guess_amplitude:
             model.parameters[2] = amplitude
         if guess_t0:
@@ -657,7 +663,8 @@ def nest_lc(data, model, param_names, bounds, guess_amplitude_bound=False,
             raise ValueError("cannot supply bounds for parameter {0!r}"
                              " when guess_amplitude_bound=True")
         else:
-            _, amplitude = guess_t0_and_amplitude(data, model, minsnr)
+            _, amplitude = guess_t0_and_amplitude(data, model, minsnr, 
+                                                  zbounds = bounds['z'])
             bounds[model.param_names[2]] = (0., 10. * amplitude)
 
     # Drop data that the model doesn't cover.
