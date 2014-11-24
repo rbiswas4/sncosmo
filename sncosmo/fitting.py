@@ -566,7 +566,7 @@ def _nest_lc(data, model, param_names, modelcov,
 
 def nest_lc(data, model, param_names, bounds, guess_amplitude_bound=False,
             minsnr=5., priors=None, nobj=100, maxiter=10000, modelcov=False,
-            verbose=False):
+            maxtime=None, verbose=False):
     """Run nested sampling algorithm to estimate model parameters and evidence.
 
     Parameters
@@ -603,6 +603,8 @@ def nest_lc(data, model, param_names, bounds, guess_amplitude_bound=False,
         Maximum number of iterations. Default is 10000.
     modelcov : bool, optional
         Include model covariance when calculating chisq. Default is False.
+    maxtime : float, optional defaults to  None.
+        Max time in minutes before the sampling is forced to stop. 
     verbose : bool, optional
 
     Returns

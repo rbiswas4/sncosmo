@@ -132,7 +132,7 @@ class Interp1d(object):
         return (1.-w) * self._y[i] + w * self._y[i+1]
 
 
-def pdf_to_ppf(pdf, a, b, n=10001):
+def pdf_to_ppf(pdf, a, b, n=1001):
     """Given a function representing a pdf, return a callable representing the
     inverse cdf (or ppf) of the pdf."""
 
