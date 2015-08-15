@@ -131,7 +131,9 @@ def _bandflux(model, band, time_or_phase, zp, zpsys):
 
         # Get the flux
         f = model._flux(time_or_phase[mask], b.wave)
-        fsum = np.sum(f * b.trans * b.wave * b.dwave, axis=1) / HC_ERG_AA
+        # fsum = np.sum(f * b.trans * b.wave * b.dwave, axis=1) / HC_ERG_AA
+        # To get in units of ergs/ cm^2/ sec
+        fsum = np.sum(f * b.trans * b.dwave, axis=1) # / HC_ERG_AA
 
         if zp is not None:
             zpnorm = 10.**(0.4 * zp[mask])

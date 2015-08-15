@@ -269,7 +269,7 @@ class Spectrum(object):
                               u.spectral_density(self._wunit, d))
 
         # Then convert ergs to photons: photons = Energy / (h * nu).
-        f = f / const.h.cgs.value / self._wunit.to(u.Hz, d, u.spectral())
+        # f = f / const.h.cgs.value / self._wunit.to(u.Hz, d, u.spectral())
 
         trans = np.interp(d, bwave, btrans)
         binw = np.gradient(d)
