@@ -18,12 +18,12 @@ __all__ = ['plot_lc', 'animate_source']
 
 _model_ls = ['-', '--', ':', '-.']
 
-
 def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
             pulls=True, xfigsize=None, yfigsize=None, figtext=None,
             model_label=None, errors=None, ncol=2, figtextsize=1.,
             show_model_params=True, tighten_ylim=False, color=None,
-            cmap=None, cmap_lims=(3000., 10000.), fname=None, **kwargs):
+            cmap=None, cmap_lims=(3000., 10000.), fname=None,
+            overplotonfig=None,**kwargs):
     """Plot light curve data or model light curves.
 
     Parameters
@@ -242,14 +242,20 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
                figtextsize)
 
     # Create the figure and axes.
-    fig, axes = plt.subplots(nrow, ncol, figsize=figsize, squeeze=False)
+    if overplotonfig is None:
+        fig, axes = plt.subplots(nrow, ncol, figsize=figsize, squeeze=False)
 
-    fig.subplots_adjust(left=lspace / figsize[0],
-                        bottom=bspace / figsize[1],
-                        right=1. - trspace / figsize[0],
-                        top=1. - (figtextsize + trspace) / figsize[1],
-                        wspace=wspace / wpanel,
-                        hspace=hspace / hpanel)
+        fig.subplots_adjust(left=lspace / figsize[0],
+                            bottom=bspace / figsize[1],
+                            right=1. - trspace / figsize[0],
+                            top=1. - (figtextsize + trspace) / figsize[1],
+                            wspace=wspace / wpanel,
+                            hspace=hspace / hpanel)
+
+    else:
+        fig = overplotonfig
+        axes = np.array(overplotonfig.axes, dtype=object)
+        axes = axes.reshape(nrow, ncol)
 
     # Write figtext at the top of the figure.
     for i, coltext in enumerate(figtext):
@@ -285,6 +291,7 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
     for axnum in range(ncol * nrow):
         row = axnum // ncol
         col = axnum % ncol
+
         ax = axes[row, col]
 
         if axnum >= len(waves_and_bands):
