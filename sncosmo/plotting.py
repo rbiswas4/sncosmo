@@ -23,7 +23,7 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
             model_label=None, errors=None, ncol=2, figtextsize=1.,
             show_model_params=True, tighten_ylim=False, color=None,
             cmap=None, cmap_lims=(3000., 10000.), fname=None,
-            overplotonfig=None,**kwargs):
+            overplotonfig=None, errorbarkwargs=None, **kwargs):
     """Plot light curve data or model light curves.
 
     Parameters
@@ -90,7 +90,6 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
         and a bandpass with a central wavelength of 10000 will be assigned a
         color at the high end of the colormap.
     fname : str, optional
-        Filename to pass to savefig. If None (default), figure is returned.
     kwargs : optional
         Any additional keyword args are passed to `~matplotlib.pyplot.savefig`.
         Popular options include ``dpi``, ``format``, ``transparent``. See
@@ -315,8 +314,13 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
             time = data['time'][mask]
             flux = data['flux'][mask]
             fluxerr = data['fluxerr'][mask]
-            ax.errorbar(time - toff, flux, fluxerr, ls='None',
-                        color=bandcolor, marker='.', markersize=3.)
+            if errorbarkwargs is None:
+                ax.errorbar(time - toff, flux, fluxerr, ls='None',
+                            color=bandcolor, marker='.', markersize=3.)
+            else:
+                ax.errorbar(time - toff, flux, fluxerr, ls='None',
+                            color=bandcolor, **errorbarkwargs)
+
 
         # Plot model(s) if there are any.
         lines = []
