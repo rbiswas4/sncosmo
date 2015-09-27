@@ -90,6 +90,14 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
         and a bandpass with a central wavelength of 10000 will be assigned a
         color at the high end of the colormap.
     fname : str, optional
+    overplotonfig : `~matpltotlib.pyplot.figure` object, optional
+        overplot the current plot on a previously made figure, with the same
+        subplot axes. This is mostly useful for plotting different realizations
+        of the same supernova. Default is None.
+    errorbarkwargs : optional
+        A dictionary (to be used without **) to pass any additional keyword
+        args to `~matplotlib.pyplot.errorbar`, for example to change style
+        directives. Default is None 
     kwargs : optional
         Any additional keyword args are passed to `~matplotlib.pyplot.savefig`.
         Popular options include ``dpi``, ``format``, ``transparent``. See
@@ -314,13 +322,21 @@ def plot_lc(data=None, model=None, bands=None, zp=25., zpsys='ab',
             time = data['time'][mask]
             flux = data['flux'][mask]
             fluxerr = data['fluxerr'][mask]
-            if errorbarkwargs is None:
-                ax.errorbar(time - toff, flux, fluxerr, ls='None',
-                            color=bandcolor, marker='.', markersize=3.)
-            else:
-                ax.errorbar(time - toff, flux, fluxerr, ls='None',
-                            color=bandcolor, **errorbarkwargs)
 
+            # setup plotstyle for light curve error bar plot
+            if errorbarkwargs is None:
+                errorbarkwargs = dict()
+            # setup defaults for marker and markersize if not provided
+            errorbarkeys = map(lambda x: x.lower(), errorbarkwargs.keys())
+            msoverride = 'markersize' in errorbarkeys or 'ms' in errorbarkeys
+            markeroverride = 'marker' in errorbarkeys
+            if not markeroverride:
+                errorbarkwargs['marker'] = '.'
+            if not msoverride: 
+                errorbarkwargs['ms'] = 0.3 
+            # Make the error bar plot
+            ax.errorbar(time - toff, flux, fluxerr, ls='None',
+                        color=bandcolor, **errorbarkwargs)
 
         # Plot model(s) if there are any.
         lines = []
