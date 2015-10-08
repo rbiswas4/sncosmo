@@ -288,12 +288,23 @@ kepler_meta = {
     'description': 'Bandpass for the Kepler spacecraft',
     'dataurl': 'http://keplergo.arc.nasa.gov/CalibrationResponse.shtml'}
 
-bands = [('bessellux', 'bessell/bessell_ux.dat', bessell_meta),
+
+# Bands in Angstrom
+    # Bands in per Energy Convention
+    # Transmission column is # photons transmitted/Energy of incident photons 
+bands_inperEnergyConvention = \
+        [('bessellux', 'bessell/bessell_ux.dat', bessell_meta),
          ('bessellb', 'bessell/bessell_b.dat', bessell_meta),
          ('bessellv', 'bessell/bessell_v.dat', bessell_meta),
          ('bessellr', 'bessell/bessell_r.dat', bessell_meta),
-         ('besselli', 'bessell/bessell_i.dat', bessell_meta),
-         ('desg', 'des/des_g.dat', des_meta),
+         ('besselli', 'bessell/bessell_i.dat', bessell_meta)]
+for name, fname, meta in bands:
+    registry.register_loader(Bandpass, name, load_bandpass_angstroms,
+                             args=['data/bandpasses/' + fname,
+                             trans_unit=u.],
+                             meta=meta)
+    # Transmission columns is # photons transmitted / # photons incident
+bands = [('desg', 'des/des_g.dat', des_meta),
          ('desr', 'des/des_r.dat', des_meta),
          ('desi', 'des/des_i.dat', des_meta),
          ('desz', 'des/des_z.dat', des_meta),
@@ -347,6 +358,7 @@ for name, fname, meta in bands:
                              args=['data/bandpasses/' + fname],
                              meta=meta)
 
+# wave_unit is micron
 bands = [('f070w', 'jwst/jwst_nircam_f070w.dat', jwst_nircam_meta),
          ('f090w', 'jwst/jwst_nircam_f090w.dat', jwst_nircam_meta),
          ('f115w', 'jwst/jwst_nircam_f115w.dat', jwst_nircam_meta),

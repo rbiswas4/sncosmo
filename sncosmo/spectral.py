@@ -16,7 +16,7 @@ from . import registry
 
 __all__ = ['get_bandpass', 'get_magsystem', 'read_bandpass', 'Bandpass',
            'Spectrum', 'MagSystem', 'SpectralMagSystem', 'ABMagSystem']
-
+HC_ERG_AA = const.h.cgs.value * const.c.to(u.AA / u.s).value
 
 def get_bandpass(name):
     """Get a Bandpass from the registry by name."""
@@ -28,15 +28,39 @@ def get_magsystem(name):
     return registry.retrieve(MagSystem, name)
 
 
-def read_bandpass(fname, fmt='ascii', wave_unit=u.AA, name=None):
+def read_bandpass(fname, fmt='ascii', wave_unit=u.AA, name=None,
+                  trans_unit=u.dimensionless_unscaled)
     """Read two-column bandpass. First column is assumed to be wavelength
-    in Angstroms."""
+    in Angstroms.
+
+    Parameters
+    ----------
+    fname : string, mandatory
+        path to file containing the two columns data for bandpass  
+    fmt : string, optional
+        format of file. Currently only ASCII file supported,
+        default is ascii
+    wave_unit : `~astropy.units.Unit`, optional
+        unit of wavelength. default is Angstrom
+    name : string, optional
+        Name of bandpass in registry. Default is None.
+    trans_unit : `~astropy.unit.Unit`, optional
+        units of the transmission column of the bandpass. Allowed
+        options are dimensionless and units of 1/energy. For the
+        case of dimensionless units, the transmission column is
+        the ratio of the number  of transmitted photons to the
+        number of incident photons. In the case of units of
+        1/energy, the transmission column is the ratio of number of
+        transmitted photons to the energy of the incident photons. 
+        Default is dimensionless wavelengths.
+    """
 
     if fmt != 'ascii':
         raise ValueError("format {0} not supported. Supported formats: 'ascii'"
                          .format(fmt))
     t = ascii.read(fname, names=['wave', 'trans'])
-    return Bandpass(t['wave'], t['trans'], wave_unit=wave_unit, name=name)
+    return Bandpass(t['wave'], t['trans'], wave_unit=wave_unit,
+                    trans_unit=trans_unit, name=name)
 
 
 class Bandpass(object):
@@ -79,6 +103,8 @@ class Bandpass(object):
             wave_unit = u.Unit(wave_unit)
             wave = wave_unit.to(u.AA, wave, u.spectral())
 
+        if trans_unit !=  u.dimensionless_unscaled:
+            trans = trans * wave / HC_ERG_AA
         # Check that values are monotonically increasing.
         # We could sort them, but if this happens, it is more likely a user
         # error or faulty bandpass definition. So we leave it to the user to
