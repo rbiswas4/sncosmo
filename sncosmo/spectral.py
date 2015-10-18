@@ -29,7 +29,7 @@ def get_magsystem(name):
 
 
 def read_bandpass(fname, fmt='ascii', wave_unit=u.AA, name=None,
-                  trans_unit=u.dimensionless_unscaled)
+                  trans_unit=u.dimensionless_unscaled):
     """Read two-column bandpass. First column is assumed to be wavelength
     in Angstroms.
 
@@ -46,11 +46,13 @@ def read_bandpass(fname, fmt='ascii', wave_unit=u.AA, name=None,
         Name of bandpass in registry. Default is None.
     trans_unit : `~astropy.unit.Unit`, optional
         units of the transmission column of the bandpass. Allowed
-        options are dimensionless and units of 1/energy. For the
+        options are dimensionless and units 1/erg represented 
+        as `astropy.units.dimensionless_unscaled`  and 
+        `astropy.units.Unit('1 / erg'). For the
         case of dimensionless units, the transmission column is
         the ratio of the number  of transmitted photons to the
         number of incident photons. In the case of units of
-        1/energy, the transmission column is the ratio of number of
+        1/ergs, the transmission column is the ratio of number of
         transmitted photons to the energy of the incident photons. 
         Default is dimensionless wavelengths.
     """
@@ -91,7 +93,8 @@ class Bandpass(object):
 
     """
 
-    def __init__(self, wave, trans, wave_unit=u.AA, name=None):
+    def __init__(self, wave, trans, wave_unit=u.AA, trans_unit=u.dimensionless_unscaled,
+                 name=None):
         wave = np.asarray(wave, dtype=np.float64)
         trans = np.asarray(trans, dtype=np.float64)
         if wave.shape != trans.shape:
@@ -104,7 +107,10 @@ class Bandpass(object):
             wave = wave_unit.to(u.AA, wave, u.spectral())
 
         if trans_unit !=  u.dimensionless_unscaled:
-            trans = trans * wave / HC_ERG_AA
+            if trans_unit == u("1 / erg"):
+                trans = trans * HC_ERG_AA / wave
+            else:
+                raise ValueError('trans_unit not implemented')
         # Check that values are monotonically increasing.
         # We could sort them, but if this happens, it is more likely a user
         # error or faulty bandpass definition. So we leave it to the user to

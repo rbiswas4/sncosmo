@@ -15,6 +15,7 @@ import codecs
 
 import numpy as np
 from astropy import wcs, units as u
+from astropy.units import Unit
 from astropy.io import ascii, fits
 from astropy.config import ConfigurationItem, get_cache_dir
 from astropy.extern import six
@@ -115,9 +116,11 @@ def get_abspath(relpath, name, version=None):
     return abspath
 
 
-def load_bandpass_angstroms(pkg_data_name, name=None):
+def load_bandpass_angstroms(pkg_data_name, name=None, trans_unit=u.dimensionless_unscaled):
+    print name, trans_unit, pkg_data_name
     fname = get_pkg_data_filename(pkg_data_name)
-    return read_bandpass(fname, wave_unit=u.AA, name=name)
+    print pkg_data_name, fname 
+    return read_bandpass(fname, wave_unit=u.AA, name=name)#, trans_unit=trans_unit)
 
 
 def load_bandpass_microns(pkg_data_name, name=None):
@@ -298,10 +301,11 @@ bands_inperEnergyConvention = \
          ('bessellv', 'bessell/bessell_v.dat', bessell_meta),
          ('bessellr', 'bessell/bessell_r.dat', bessell_meta),
          ('besselli', 'bessell/bessell_i.dat', bessell_meta)]
-for name, fname, meta in bands:
+for name, fname, meta in bands_inperEnergyConvention:
     registry.register_loader(Bandpass, name, load_bandpass_angstroms,
-                             args=['data/bandpasses/' + fname,
-                             trans_unit=u.],
+                             args=['data/bandpasses/'],
+                             #+ fname, name,
+                             #Unit('1 / erg')],
                              meta=meta)
     # Transmission columns is # photons transmitted / # photons incident
 bands = [('desg', 'des/des_g.dat', des_meta),
