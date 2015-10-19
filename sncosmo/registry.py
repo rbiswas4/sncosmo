@@ -150,7 +150,6 @@ def retrieve(data_class, name, version=None):
 
     """
 
-    print "At start of function", name
     if isinstance(name, data_class):
         return name
 
@@ -175,7 +174,6 @@ def retrieve(data_class, name, version=None):
     except KeyError:
         pass
 
-    print "keys ", key
     # Try to retrieve from the loaders.
     if key in _loaders:
         func, args, meta = _loaders[key]

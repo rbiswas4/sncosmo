@@ -9,6 +9,7 @@ import numpy as np
 from astropy.utils import OrderedDict, lazyproperty
 from astropy.io import ascii
 import astropy.units as u
+from astropy.units import Unit
 import astropy.constants as const
 from astropy import cosmology
 
@@ -107,7 +108,7 @@ class Bandpass(object):
             wave = wave_unit.to(u.AA, wave, u.spectral())
 
         if trans_unit !=  u.dimensionless_unscaled:
-            if trans_unit == u("1 / erg"):
+            if trans_unit == Unit("1 / erg"):
                 trans = trans * HC_ERG_AA / wave
             else:
                 raise ValueError('trans_unit not implemented')
