@@ -28,7 +28,7 @@ except ImportError:
         raise
 
 __all__ = ['get_source', 'Source', 'TimeSeriesSource', 'StretchSource',
-           'SALT2Source', 'Model',
+           'SALT2Source', 'SUGARSource', 'Model',
            'PropagationEffect', 'CCM89Dust', 'OD94Dust', 'F99Dust']
 
 
@@ -541,6 +541,171 @@ class StretchSource(Source):
     def _flux(self, phase, wave):
         return (self._parameters[0] *
                 self._model_flux(phase / self._parameters[1], wave))
+
+
+       
+class SUGARSource(Source):
+    """The sugar model 
+    """
+    def __init__(self, sugar_modelDir='model_data',
+                 sugar_fname='SUGAR_model.asci'):
+        """
+        Parameters
+        ----------
+        sugar_modelDir : string, optional
+            directory in which model file is stored, defaults to 'model_data'
+        sugar_filename : string, optional
+            filename, defaults to 'SUGAR_model.asci'
+
+        """
+        
+        # Required Parameters block (continued later)
+        self.name = 'SUGAR'
+        self._parameters = np.array([1., 1., 1., 1.])
+        self.param_names_latex = ['q1', 'q2', 'q3', 'Av', 'deltaM']
+        self._param_names = ['q1', 'q2', 'q3', 'Av', 'DeltaM']
+        self.version = 'v0.1'
+
+        self._modelDir  = sugar_modelDir
+        self.model_data_filename = os.path.join(sugar_modelDir, sugar_fname)
+        self.model_data = np.loadtxt(self.model_data_filename)
+        self._numPhase = len(self._phase)
+        self._numWave = len(self._wave)
+
+	# Instantiate the spline2d Interpolation Objects
+        print (np.shape(self.model_data))
+        self._M0Interp = self.spl(2)
+        self._alpha1Interp = self.spl(3)
+        self._alpha2Interp = self.spl(4)
+        self._alpha3Interp = self.spl(5)
+
+
+	# Private helper function 
+	def spl(self, columnNum):
+	    """
+	    Private helper function to spline the principal components
+	    based on the very file structure provided
+
+	    Parameters
+	    ----------
+	    columnNum : integer, denotes the column for the function	
+
+	    Returns
+	    -------
+	    Spline interpolation Object
+	    """
+	    mval = self.model_data[:, columnNum]
+	    modelVal = np.reshape(mval, (self._numPhase, self._numWave))
+	    return Spline2d(self._phase, self._wave, modelVal, kx=1, ky=1)	
+
+
+	# Basic Principle Components in mag space for SUGAR
+        def M0(self, phase, wave):
+	    """
+	    Mean Spectral model for SN as a function of rest frame phase and
+	    wavelength
+
+	    Parameters
+	    ----------
+	    phase : float, array-like
+	    wave : float, array-like
+
+
+	    Returns
+	    -------
+	    returns the Mean Spectral model
+	    """
+       	    return self._M0Interp(phase, wave)
+
+	def alpha1(self, phase, wave):
+	    """
+	    First principle component
+
+	    Parameters
+	    ----------
+	    phase : float, array-like
+	    wave : float, array-like
+
+
+	    Returns
+	    -------
+	    returns the first principle component
+	    """
+
+	    return self._alpha1Interp(phase, wave)
+
+	def alpha2(self, phase, wave):
+	    """
+	    Second principle component
+
+	    Parameters
+	    ----------
+	    phase : float, array-like
+	    wave : float, array-like
+
+
+	    Returns
+	    -------
+	    returns the second principle component
+	    """
+	    return self._alpha2Interp(phase, wave)
+	def alpha3 (self, phase, wave):
+	    """
+	    Third principle component
+
+	    Parameters
+	    ----------
+	    phase : float, array-like
+	    wave : float, array-like
+
+
+	    Returns
+	    -------
+	    returns the third principle component
+	    """
+	    return self._alpha3Interp(phase, wave)
+
+
+    @property    
+    def _wave(self):
+        return np.unique(self.model_data[:, 1])
+    
+    @property    
+    def _phase(self):
+        return np.unique(self.model_data[:, 0])
+    
+        # Required Functions
+    def minwave(self):
+        return self._wave[0]
+    def maxwave(self):
+        return self._wave[-1]
+    def minphase(self):
+        return self._phase[0]
+    def maxphase (self):
+        return self._phase[-1]
+
+    def _flux(self, phase, wave):
+	"""
+	return the flux of the object at the phase and wavelength values
+	requested.
+
+	Parameters
+	----------
+	phase : float, array-like, units of days
+	    rest frame time
+	wave : float, array-like , units of Ang
+	    rest frame wavelength
+	"""
+        mags = self.M0(phase, wave) + \
+               self._parameters[0] * self.alpha1(phase, wave) +\
+               self._parameters[1] * self.alpha2(phase, wave) +\
+               self._parameters[2] * self.alpha3(phase, wave) 
+        return 10.0 ** ( -0.4 * mags)
+    
+    
+	
+     
+
 
 
 class SALT2Source(Source):
