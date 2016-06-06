@@ -24,6 +24,12 @@ def test_read_snana_fits():
     sne = sncosmo.read_snana_fits(fname1, fname2)
     assert len(sne) == 2
 
+def test_read_snana_fits_byn():
+    fname1 = join(dirname(__file__), "data", "snana_fits_example_head.fits")
+    fname2 = join(dirname(__file__), "data", "snana_fits_example_phot.fits")
+    sne = sncosmo.read_snana_fits(fname1, fname2, n=1)
+    assert len(sne) == 1
+    assert len(sne[0]) == 48
 
 def test_read_snana_simlib():
     fname = join(dirname(__file__), "data", "snana_simlib_example.dat")
