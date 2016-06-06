@@ -28,7 +28,6 @@ def test_read_snana_fits_byn():
     fname1 = join(dirname(__file__), "data", "snana_fits_example_head.fits")
     fname2 = join(dirname(__file__), "data", "snana_fits_example_phot.fits")
     sne = sncosmo.read_snana_fits(fname1, fname2, n=1)
-    assert len(sne['flux']) == 48
     assert len(sne) == 1
     assert len(sne[0]) == 48
 
